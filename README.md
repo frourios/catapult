@@ -122,11 +122,6 @@ Docker の Inbucket に仮想メールが届くため任意のメールアドレ
 
 `PostgreSQL`
 
-### デプロイ検証済みPaaS
-
-- [Render](https://render.com)
-- [Railway](https://railway.app)
-
 ### 外部連携サービス
 
 - AWS Cognito

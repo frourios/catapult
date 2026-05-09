@@ -58,7 +58,7 @@ export const createCognitoUser = async (): Promise<Tokens> => {
 export const createGoogleUser = async (): Promise<Tokens> => {
   const userName = `${TEST_USERNAME_PREFIX}-${ulid()}`;
   const codeVerifier = ulid();
-  const user = await fetch(`${COGNITO_POOL_ENDPOINT}/public/socialUsers`, {
+  const user = await fetch(`${COGNITO_POOL_ENDPOINT}/publicApi/socialUsers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -70,16 +70,19 @@ export const createGoogleUser = async (): Promise<Tokens> => {
       userPoolClientId: COGNITO_USER_POOL_CLIENT_ID,
     }),
   }).then((res) => res.json() as Promise<{ authorizationCode: string }>);
+
+  const params = new URLSearchParams();
+
+  params.append('grant_type', 'authorization_code');
+  params.append('code', user.authorizationCode);
+  params.append('client_id', COGNITO_USER_POOL_CLIENT_ID);
+  params.append('redirect_uri', 'https://example.com');
+  params.append('code_verifier', codeVerifier);
+
   const tokens = await fetch(`${COGNITO_POOL_ENDPOINT}/oauth2/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      grant_type: 'authorization_code',
-      code: user.authorizationCode,
-      client_id: COGNITO_USER_POOL_CLIENT_ID,
-      redirect_uri: 'https://example.com',
-      code_verifier: codeVerifier,
-    }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params,
   }).then((res) => res.json() as Promise<{ id_token: string; access_token: string }>);
 
   return { idToken: tokens.id_token, accessToken: tokens.access_token };
